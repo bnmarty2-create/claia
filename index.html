@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CLAIA — Personal Shopper Sandro</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #FAF8F5;
+  --white: #ffffff;
+  --text: #1A1A1A;
+  --muted: #8A7E72;
+  --gold: #C4956A;
+  --border: rgba(0,0,0,0.09);
+  --border-md: rgba(0,0,0,0.15);
+  --serif: 'Cormorant Garamond', serif;
+  --sans: 'Jost', sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 13px; -webkit-font-smoothing: antialiased; }
+body { background: var(--bg); color: var(--text); font-family: var(--sans); font-weight: 300; min-height: 100vh; }
+
+/* NAV */
+#nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: var(--bg); border-bottom: 0.5px solid var(--border-md);
+  height: 58px; display: flex; align-items: center; justify-content: space-between;
+  padding: 0 44px;
+}
+.nav-logo { font-family: var(--serif); font-weight: 300; font-size: 20px; letter-spacing: 0.35em; color: var(--text); text-decoration: none; }
+.nav-logo em { font-style: italic; color: var(--gold); }
+.nav-links { display: flex; gap: 28px; }
+.nav-btn {
+  font-family: var(--sans); font-size: 9px; font-weight: 400;
+  letter-spacing: 0.2em; text-transform: uppercase; cursor: pointer;
+  color: var(--muted); border: none; background: none;
+  padding-bottom: 2px; border-bottom: 1.5px solid transparent; transition: all 0.2s;
+}
+.nav-btn.on { color: var(--text); border-bottom-color: var(--text); }
+.nav-tag { font-size: 9px; color: var(--muted); letter-spacing: 0.1em; }
+
+/* SCREENS */
+.screen { display: none; padding-top: 58px; min-height: 100vh; }
+.screen.on { display: block; animation: up 0.3s ease; }
+@keyframes up { from { opacity:0; transform:translateY(10px) } to { opacity:1; transform:translateY(0) } }
+
+/* SEARCH BAR */
+.search-wrap { padding: 28px 44px 0; }
+.search-row {
+  display: flex; align-items: center; height: 48px;
+  border: 0.5px solid var(--border-md); background: var(--white);
+}
+.search-icon { padding: 0 14px; color: var(--muted); display: flex; align-items: center; }
+.search-input {
+  flex: 1; border: none; outline: none; background: none;
+  font-family: var(--sans); font-size: 12px; font-weight: 300;
+  color: var(--text); font-style: italic;
+}
+.search-input::placeholder { color: var(--muted); }
+.search-badge {
+  font-size: 7px; letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--gold); padding: 0 14px; border-left: 0.5px solid var(--border);
+  height: 100%; display: flex; align-items: center;
+}
+.search-go {
+  height: 100%; padding: 0 22px; background: var(--text); color: var(--white);
+  border: none; font-family: var(--sans); font-size: 9px;
+  letter-spacing: 0.18em; text-transform: uppercase; cursor: pointer;
+  transition: opacity 0.2s;
+}
+.search-go:hover { opacity: 0.75; }
+.search-thinking { display: none; padding: 8px 44px 0; font-size: 11px; color: var(--gold); font-style: italic; animation: blink 1.4s ease-in-out infinite; }
+@keyframes blink { 0%,100%{opacity:0.4} 50%{opacity:1} }
+
+/* FILTERS */
+.filters-body { padding: 28px 44px 56px; }
+.eyebrow { font-size: 8px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; }
+.section-title { font-family: var(--serif); font-weight: 300; font-size: 28px; margin-bottom: 4px; }
+.section-sub { font-size: 11px; color: var(--muted); margin-bottom: 32px; }
+
+.f-block { margin-bottom: 22px; }
+.f-label { font-size: 8px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 10px; }
+
+.budget-val { font-family: var(--serif); font-size: 20px; margin-bottom: 8px; }
+input[type=range] { width: 360px; max-width: 100%; accent-color: var(--text); cursor: pointer; }
+
+.f-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; max-width: 520px; margin-bottom: 22px; }
+.f-select {
+  background: var(--white); border: 0.5px solid var(--border-md);
+  padding: 10px 12px; font-family: var(--sans); font-size: 11px; color: var(--text);
+  outline: none; cursor: pointer; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%238A7E72' stroke-width='1'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 12px center;
+}
+.hr { height: 0.5px; background: var(--border-md); margin: 22px 0; }
+
+.pills { display: flex; flex-wrap: wrap; gap: 7px; }
+.pill {
+  padding: 6px 16px; border: 0.5px solid var(--border-md); background: var(--white);
+  font-family: var(--sans); font-size: 10px; cursor: pointer;
+  transition: all 0.18s; color: var(--muted); user-select: none;
+}
+.pill.on { background: var(--text); color: var(--white); border-color: var(--text); }
+
+.f-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 28px; }
+.btn-ghost {
+  border: 0.5px solid var(--border-md); background: none; padding: 10px 24px;
+  font-family: var(--sans); font-size: 8px; letter-spacing: 0.16em;
+  text-transform: uppercase; cursor: pointer; color: var(--muted); transition: all 0.18s;
+}
+.btn-ghost:hover { border-color: var(--text); color: var(--text); }
+.btn-dark {
+  background: var(--text); color: var(--white); border: none; padding: 11px 28px;
+  font-family: var(--sans); font-size: 8px; letter-spacing: 0.16em;
+  text-transform: uppercase; cursor: pointer; transition: opacity 0.18s;
+}
+.btn-dark:hover { opacity: 0.8; }
+
+/* CINEMA */
+.cinema-body { padding: 38px 44px 56px; }
+.cinema-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 28px 0 36px; }
+.cinema-card {
+  background: var(--white); border: 0.5px solid var(--border-md);
+  padding: 20px 18px; cursor: pointer; transition: all 0.2s;
+}
+.cinema-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.04); }
+.cinema-card.on { border-color: var(--gold); background: #FFFBF7; }
+.c-dot { width: 6px; height: 6px; border-radius: 50%; margin-bottom: 12px; }
+.c-film { font-family: var(--serif); font-size: 13px; font-style: italic; margin-bottom: 4px; line-height: 1.35; }
+.c-char { font-size: 8px; text-transform: uppercase; letter-spacing: 0.16em; color: var(--muted); margin-bottom: 3px; }
+.c-era { font-size: 8px; letter-spacing: 0.1em; color: var(--gold); }
+.cinema-actions { display: flex; justify-content: space-between; align-items: center; }
+
+/* RESULTS */
+.results-body { padding: 24px 44px 56px; }
+.ctx-bar {
+  border: 0.5px solid var(--border); background: var(--white);
+  padding: 11px 16px; margin-bottom: 24px;
+  font-size: 11px; color: var(--muted); line-height: 1.6;
+}
+.ctx-bar b { color: var(--text); font-weight: 400; }
+.results-layout { display: grid; grid-template-columns: 268px 1fr; gap: 24px; }
+
+/* Mannequin panel */
+.mann-panel {
+  background: var(--white); border: 0.5px solid var(--border-md);
+  padding: 18px; position: sticky; top: 74px; align-self: start;
+}
+.morph-bar { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 14px; }
+.morph-btn {
+  padding: 4px 8px; border: 0.5px solid var(--border-md); background: none;
+  font-size: 8px; letter-spacing: 0.1em; text-transform: uppercase;
+  cursor: pointer; color: var(--muted); transition: all 0.18s; font-family: var(--sans);
+}
+.morph-btn.on { background: var(--text); color: var(--white); border-color: var(--text); }
+.mann-box {
+  width: 100%; aspect-ratio: 2/3; overflow: hidden; background: #f2f0ec;
+  display: flex; align-items: center; justify-content: center;
+}
+.mann-box img { width: 100%; height: 100%; object-fit: cover; object-position: top center; transition: opacity 0.25s; }
+.outfit-name { font-family: var(--serif); font-size: 14px; font-style: italic; margin-top: 12px; }
+.outfit-desc { font-size: 10px; color: var(--muted); margin-top: 3px; margin-bottom: 12px; line-height: 1.5; }
+
+/* Pieces */
+.pieces-col { display: flex; flex-direction: column; gap: 12px; }
+.piece-card { background: var(--white); border: 0.5px solid var(--border-md); padding: 16px; }
+.piece-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.piece-cat { font-size: 7px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); }
+.piece-price { font-family: var(--serif); font-size: 16px; }
+.piece-name { font-size: 12px; font-weight: 400; margin-bottom: 2px; }
+.piece-brand { font-size: 10px; color: var(--muted); margin-bottom: 10px; }
+
+/* CAROUSEL */
+.carousel { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 10px; }
+.carousel::-webkit-scrollbar { height: 2px; }
+.carousel::-webkit-scrollbar-thumb { background: var(--border-md); }
+.car-item {
+  flex-shrink: 0; width: 68px; cursor: pointer;
+  border: 1.5px solid var(--border); transition: border-color 0.18s; background: #f2f0ec;
+}
+.car-item-img { width: 68px; height: 68px; overflow: hidden; }
+.car-item-img img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
+.car-item-lbl {
+  font-size: 8px; color: var(--muted); padding: 3px 4px; line-height: 1.2;
+  font-family: var(--sans); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  text-align: center;
+}
+.car-item.on { border-color: var(--text); }
+.car-item.on .car-item-lbl { color: var(--text); }
+
+.piece-hint { font-size: 9px; color: var(--muted); margin-bottom: 8px; }
+.btn-add {
+  width: 100%; border: 0.5px solid var(--border-md); background: none;
+  padding: 8px; font-family: var(--sans); font-size: 8px;
+  letter-spacing: 0.16em; text-transform: uppercase; cursor: pointer;
+  transition: all 0.18s; color: var(--text);
+}
+.btn-add:hover { background: var(--text); color: var(--white); }
+
+.total-bar {
+  background: var(--white); border: 0.5px solid var(--border-md);
+  padding: 18px 20px; display: flex; align-items: center;
+  justify-content: space-between; margin-top: 12px;
+}
+.total-lbl { font-size: 8px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 3px; }
+.total-amt { font-family: var(--serif); font-size: 24px; }
+.total-acts { display: flex; gap: 8px; }
+
+.other-row { margin-top: 20px; }
+.other-lbl { font-size: 8px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+.thumbs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
+.thumb { flex-shrink: 0; width: 88px; cursor: pointer; border: 1.5px solid transparent; transition: all 0.18s; }
+.thumb.on { border-color: var(--gold); }
+.thumb img { width: 100%; aspect-ratio: 2/3; object-fit: cover; object-position: top; display: block; }
+.thumb-name { font-size: 9px; color: var(--muted); margin-top: 4px; text-align: center; line-height: 1.2; }
+
+/* VISUAL SEARCH */
+.vs-body { padding: 38px 44px 56px; }
+.vs-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 44px; align-items: start; }
+.upload-zone {
+  border: 1px dashed var(--border-md); background: var(--white);
+  padding: 48px 28px; text-align: center; cursor: pointer;
+  transition: border-color 0.2s; margin-bottom: 18px;
+}
+.upload-zone:hover { border-color: var(--gold); }
+.upload-zone.has-img { padding: 0; border: 0.5px solid var(--border-md); overflow: hidden; }
+.upload-zone.has-img img { width: 100%; max-height: 340px; object-fit: cover; object-position: top; display: block; }
+.upload-ico { font-size: 24px; margin-bottom: 10px; }
+.upload-txt { font-size: 12px; color: var(--muted); margin-bottom: 5px; }
+.upload-hint { font-size: 10px; color: var(--border-md); }
+.vs-filters { display: flex; flex-direction: column; gap: 12px; margin-bottom: 18px; }
+.vs-filter-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.vs-results-title { font-family: var(--serif); font-size: 18px; margin-bottom: 14px; font-style: italic; }
+.vs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.vs-card { background: var(--white); border: 0.5px solid var(--border-md); cursor: pointer; overflow: hidden; transition: transform 0.2s; }
+.vs-card:hover { transform: translateY(-2px); }
+.vs-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; object-position: top; display: block; }
+.vs-info { padding: 9px 10px; }
+.vs-score { font-size: 7px; letter-spacing: 0.14em; color: var(--gold); text-transform: uppercase; margin-bottom: 3px; }
+.vs-name { font-family: var(--serif); font-size: 13px; }
+.vs-price { font-size: 10px; color: var(--muted); margin-top: 2px; }
+.vs-empty { grid-column: 1/-1; text-align: center; padding: 48px 16px; font-size: 12px; color: var(--muted); font-style: italic; }
+
+/* OVERLAY */
+.overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(250,248,245,0.92); z-index: 300;
+  align-items: center; justify-content: center; flex-direction: column; gap: 18px;
+}
+.overlay.on { display: flex; }
+.overlay-msg { font-family: var(--serif); font-size: 17px; font-style: italic; color: var(--text); }
+.overlay-bar { width: 160px; height: 1px; background: var(--border-md); overflow: hidden; position: relative; }
+.overlay-bar::after {
+  content: ''; position: absolute; inset: 0; background: var(--gold);
+  animation: bar 1.8s ease-in-out infinite;
+}
+@keyframes bar { 0%{transform:translateX(-100%)} 100%{transform:translateX(100%)} }
+</style>
+</head>
+<body>
+
+<nav id="nav">
+  <a class="nav-logo" href="#">CL<em>A</em>IA <span style="font-size:10px;font-family:var(--sans);letter-spacing:0.08em;color:var(--muted);font-style:normal">× Sandro</span></a>
+  <div class="nav-links">
+    <button class="nav-btn on" onclick="go('d')">Découvrir</button>
+    <button class="nav-btn" onclick="go('c')">Style Icons</button>
+    <button class="nav-btn" onclick="go('r')">Ma Sélection</button>
+    <button class="nav-btn" onclick="go('v')">Recherche Visuelle</button>
+  </div>
+  <span class="nav-tag">Personal Shopper IA</span>
+</nav>
+
+<div class="overlay" id="overlay">
+  <div class="overlay-msg" id="overlayMsg">Analyse de vos préférences...</div>
+  <div class="overlay-bar"></div>
+</div>
+
+<script>
+const G = 'https://raw.githubusercontent.com/bnmarty2-create/claia/main/images/';
+const img = n => G + n;
+
+const CATALOGUE = {
+  hauts: [
+    { id:'h1', file:'blazer-bleu-marine-essai-claua.jpg', nom:'Blazer double boutonnage marine', prix:185, couleurs:['marine','bleu','doré'], occasions:['travail','dîner','soirée'], styles:['parisien','tailored','chic'], mood:['élégant','statement','confiant'], saisons:['automne','hiver','printemps'] },
+    { id:'h2', file:'blazer-marron-essai-claia.jpg', nom:'Veste tweed col blanc', prix:195, couleurs:['marron','camel','blanc'], occasions:['travail','soirée','événement'], styles:['parisien','tailored','romantique'], mood:['sophistiqué','raffiné','élégant'], saisons:['automne','hiver'] },
+    { id:'h3', file:'blazer-noir-essai-claia.jpg', nom:'Blazer cargo noir', prix:175, couleurs:['noir'], occasions:['travail','week-end'], styles:['casual luxe','streetwear','urbain'], mood:['moderne','cool','dynamique'], saisons:['toutes saisons'] },
+    { id:'h4', file:'blazer-femme-cleed-demo.jpg', nom:'Veste cloutée dorée', prix:245, couleurs:['noir','doré'], occasions:['soirée','concert','événement'], styles:['statement','rock','bold'], mood:['audacieux','festif','iconique'], saisons:['toutes saisons'] },
+    { id:'h5', file:'chemise-beige-essai-claia.jpg', nom:'Chemise crop militaire beige', prix:79, couleurs:['beige','sable'], occasions:['week-end','balade','vacances'], styles:['casual','estival','décontracté'], mood:['léger','naturel','détendu'], saisons:['printemps','été'] },
+    { id:'h6', file:'chemise-noire-essai-claia.jpg', nom:'Top côtelé col carré noir', prix:95, couleurs:['noir','doré'], occasions:['travail','soirée','dîner'], styles:['parisien','minimaliste','chic'], mood:['élégant','sobre','intemporel'], saisons:['automne','hiver','printemps'] },
+    { id:'h7', file:'chemise-oversize-femme-photo-demo-cleed.jpg', nom:'Chemise oversize rayée', prix:145, couleurs:['bleu','blanc','rayé'], occasions:['week-end','déjeuner','balade'], styles:['casual luxe','french style','marinière'], mood:['décontracté','soigné','estival'], saisons:['printemps','été','automne'] },
+    { id:'h8', file:'bleu-ciel-chemise-essai-claia.jpg', nom:'Chemise bleu ciel', prix:85, couleurs:['bleu ciel','pastel'], occasions:['travail','dîner','soirée'], styles:['parisien','chic','raffiné'], mood:['lumineux','élégant','doux'], saisons:['printemps','été'] },
+    { id:'h9', file:'grey-t-shirt-essai-claia.jpg', nom:'T-shirt gris', prix:55, couleurs:['gris'], occasions:['week-end','quotidien','balade'], styles:['casual','minimaliste','urbain'], mood:['simple','quotidien','décontracté'], saisons:['toutes saisons'] },
+    { id:'h10', file:'t-shirt-rouge-essai-claia.jpg', nom:'T-shirt rouge', prix:55, couleurs:['rouge','vif'], occasions:['week-end','balade'], styles:['casual','statement','coloré'], mood:['énergique','pop','décontracté'], saisons:['printemps','été'] },
+  ],
+  bas: [
+    { id:'b1', file:'yellow-pants-essai-claua.jpg', nom:'Pantalon large jaune paille', prix:89, couleurs:['jaune','doré'], occasions:['travail','dîner','soirée'], styles:['parisien','statement','bold'], mood:['audacieux','lumineux','festif'], saisons:['printemps','été','automne'] },
+    { id:'b2', file:'black-jean-essai-claia.jpg', nom:'Jean droit noir', prix:110, couleurs:['noir'], occasions:['travail','soirée','quotidien'], styles:['parisien','minimaliste','classique'], mood:['sobre','élégant','polyvalent'], saisons:['toutes saisons'] },
+    { id:'b3', file:'jean-essai-claia.jpg', nom:'Jean brodé palmiers', prix:165, couleurs:['bleu délavé','doré'], occasions:['soirée','événement','sortie'], styles:['statement','bold','luxe'], mood:['audacieux','festif','unique'], saisons:['printemps','été','automne'] },
+    { id:'b4', file:'beige-skirt-essai-claia.jpg', nom:'Jupe plissée beige', prix:69, couleurs:['beige','sable'], occasions:['week-end','déjeuner','vacances'], styles:['casual','féminin','estival'], mood:['léger','doux','estival'], saisons:['printemps','été'] },
+    { id:'b5', file:'jupe-demo-cleed.jpg', nom:'Jupe volants noire', prix:110, couleurs:['noir','blanc'], occasions:['soirée','dîner','spectacle'], styles:['romantique','féminin','élégant'], mood:['romantique','sophistiqué','festif'], saisons:['toutes saisons'] },
+    { id:'b6', file:'jupe-a-motif-essai-claia.jpg', nom:'Jupe à motif rayé', prix:89, couleurs:['bleu','blanc','rayé'], occasions:['week-end','déjeuner','balade'], styles:['casual','marinière','estival'], mood:['frais','décontracté','estival'], saisons:['printemps','été'] },
+    { id:'b7', file:'pantalon-tailleur-demo-cleed.jpg', nom:'Pantalon tailleur marine', prix:120, couleurs:['marine','bleu foncé'], occasions:['travail','bureau','dîner'], styles:['tailored','parisien','professionnel'], mood:['professionnel','sobre','élégant'], saisons:['automne','hiver','printemps'] },
+    { id:'b8', file:'pantalon-camel-essai-claia.jpg', nom:'Pantalon large camel', prix:95, couleurs:['camel','chaud'], occasions:['travail','dîner','week-end'], styles:['parisien','chic','élégant'], mood:['élégant','naturel','raffiné'], saisons:['automne','hiver','printemps'] },
+    { id:'b9', file:'pantalon-cargo-noir-essai-claia.jpg', nom:'Pantalon cargo noir', prix:89, couleurs:['noir'], occasions:['week-end','quotidien'], styles:['streetwear','casual','urbain'], mood:['urbain','moderne','pratique'], saisons:['toutes saisons'] },
+  ],
+  chaussures: [
+    { id:'s1', file:'mocassins-demo-cleed.jpg', nom:'Mocassins ivoire cloutés', prix:115, couleurs:['ivoire','argent'], occasions:['travail','soirée','dîner'], styles:['parisien','chic','statement'], mood:['élégant','statement','raffiné'], saisons:['printemps','été','automne'] },
+    { id:'s2', file:'mocassin-noirs-essai-claia.jpg', nom:'Mocassins noirs', prix:95, couleurs:['noir'], occasions:['travail','soirée','quotidien'], styles:['parisien','minimaliste','classique'], mood:['sobre','polyvalent','discret'], saisons:['toutes saisons'] },
+    { id:'s3', file:'mocassin-maron-essai-claia.jpg', nom:'Mocassins marron', prix:95, couleurs:['marron','camel'], occasions:['travail','week-end','déjeuner'], styles:['casual luxe','décontracté chic'], mood:['naturel','chaud','soigné'], saisons:['automne','hiver','printemps'] },
+    { id:'s4', file:'mocassins-blancs-essai-claia.jpg', nom:'Mocassins blancs', prix:95, couleurs:['blanc','ivoire'], occasions:['week-end','déjeuner'], styles:['casual','minimaliste','estival'], mood:['frais','épuré','estival'], saisons:['printemps','été'] },
+    { id:'s5', file:'basket-white-essai-claia.jpg', nom:'Baskets blanches', prix:89, couleurs:['blanc','ivoire'], occasions:['week-end','quotidien','balade'], styles:['casual luxe','décontracté','sneaker'], mood:['décontracté','moderne','polyvalent'], saisons:['printemps','été','automne'] },
+    { id:'s6', file:'basket-marron-essai-claia.jpg', nom:'Baskets marron', prix:89, couleurs:['marron','camel'], occasions:['week-end','balade','quotidien'], styles:['casual luxe','naturel'], mood:['naturel','décontracté','soigné'], saisons:['automne','hiver','printemps'] },
+    { id:'s7', file:'basket-red-essai-claia.jpg', nom:'Baskets rouges montantes', prix:95, couleurs:['rouge','blanc'], occasions:['soirée','sortie','week-end'], styles:['statement','bold','streetwear'], mood:['audacieux','festif','statement'], saisons:['toutes saisons'] },
+    { id:'s8', file:'veja-basket-demo-cleed.jpg', nom:'Baskets Veja multicolores', prix:110, couleurs:['multicolore','camel'], occasions:['week-end','balade','quotidien'], styles:['casual','coloré','éco'], mood:['joyeux','original','décontracté'], saisons:['printemps','été'] },
+    { id:'s9', file:'heels-demo-cleed.jpg', nom:'Sandales compensées', prix:125, couleurs:['marine','ivoire'], occasions:['soirée','dîner','événement'], styles:['parisien','élégant','féminin'], mood:['élégant','féminin','estival'], saisons:['printemps','été'] },
+    { id:'s10', file:'escarpin-blanc-essai-claia.jpg', nom:'Escarpins blancs', prix:135, couleurs:['blanc','ivoire'], occasions:['soirée','dîner','mariage'], styles:['élégant','féminin','minimaliste'], mood:['pur','sophistiqué','féminin'], saisons:['printemps','été'] },
+    { id:'s11', file:'escarpin-dore-essai-claia.jpg', nom:'Escarpins dorés', prix:145, couleurs:['doré','or'], occasions:['soirée','cocktail','mariage'], styles:['glamour','festif','luxe'], mood:['festif','glamour','luxueux'], saisons:['toutes saisons'] },
+    { id:'s12', file:'escaprins-argent-essai-claia.jpg', nom:'Escarpins argentés', prix:145, couleurs:['argent','gris métallique'], occasions:['soirée','dîner','cocktail'], styles:['glamour','festif','élégant'], mood:['festif','sophistiqué','statement'], saisons:['toutes saisons'] },
+  ]
+};
+
+const TENUES = [
+  {
+    id:0, nom:'Bold Statement',
+    desc:'Blazer marine, pantalon jaune, mocassins ivoire — la combinaison signature Sandro',
+    img: img('1re-tenue-generee-prototype.png'),
+    morphs: { 'Élancée': img('slim-model-tenue-5.png'), 'Athlétique': img('athletic-model-tenue-5.png'), 'Courbes': img('plus-size-model-tenue-5.png'), 'Petite': img('petite-model-tenue-5.png'), 'Grande': img('mannequin-tall-demo-cleed.png') },
+    pieces: [
+      { cat:'Haut', prix:185, nom:'Blazer double boutonnage marine', marque:'Sandro Paris',
+        mainFile:'blazer-bleu-marine-essai-claua.jpg', mainLbl:'Blazer marine',
+        vars:[ { lbl:'Veste tweed marron', file:'blazer-marron-essai-claia.jpg', mann:'variante-H1-tenue-5.png' }, { lbl:'Chemise rayée', file:'chemise-oversize-femme-photo-demo-cleed.jpg', mann:'variante-H2-tenue-5.png' }, { lbl:'Chemise bleu ciel', file:'bleu-ciel-chemise-essai-claia.jpg', mann:'variante-H3-tenue-5.png' } ] },
+      { cat:'Bas', prix:89, nom:'Pantalon large jaune paille', marque:'Sandro Paris',
+        mainFile:'yellow-pants-essai-claua.jpg', mainLbl:'Pantalon jaune',
+        vars:[ { lbl:'Jupe volants noire', file:'jupe-demo-cleed.jpg', mann:'variante-B1-tenue-5.png' }, { lbl:'Pantalon camel', file:'pantalon-camel-essai-claia.jpg', mann:'variante-B2-tenue-5.png' }, { lbl:'Jupe à motif', file:'jupe-a-motif-essai-claia.jpg', mann:'variante-B3-tenue-5.png' } ] },
+      { cat:'Chaussures', prix:115, nom:'Mocassins ivoire cloutés', marque:'Sandro Paris',
+        mainFile:'mocassins-demo-cleed.jpg', mainLbl:'Mocassins ivoire',
+        vars:[ { lbl:'Escarpins dorés', file:'escarpin-dore-essai-claia.jpg', mann:'variante-S1-tenue-5.png' }, { lbl:'Escarpins blancs', file:'escarpin-blanc-essai-claia.jpg', mann:'variante-S2-tenue-5.png' }, { lbl:'Baskets Veja', file:'veja-basket-demo-cleed.jpg', mann:'variante-S3-tenue-5.png' } ] }
+    ],
+    occ:['travail','dîner','soirée'], styles:['parisien','tailored','statement'], mood:['confiant','élégant','audacieux']
+  },
+  { id:1, nom:'Editorial Parisienne', desc:'Top côtelé noir, jean droit noir, mocassins ivoire — le minimalisme absolu', img:img('2e-tenue-generee-pour-prototy.png'), morphs:{'Grande':img('mannequin-tall-demo-cleed.png')}, pieces:[{cat:'Haut',prix:95,nom:'Top côtelé noir',marque:'Sandro Paris',mainFile:'chemise-noire-essai-claia.jpg',mainLbl:'Top côtelé',vars:[]},{cat:'Bas',prix:110,nom:'Jean droit noir',marque:'Sandro Paris',mainFile:'black-jean-essai-claia.jpg',mainLbl:'Jean noir',vars:[]},{cat:'Chaussures',prix:115,nom:'Mocassins ivoire',marque:'Sandro Paris',mainFile:'mocassins-demo-cleed.jpg',mainLbl:'Mocassins ivoire',vars:[]}], occ:['travail','bureau','dîner'], styles:['parisien','minimaliste','sobre'], mood:['élégant','sobre','intemporel'] },
+  { id:2, nom:'Sandro Collector', desc:'Veste cloutée dorée, jean palmiers, baskets rouges — le style statement', img:img('3e-tenue-generee-prototype.png'), morphs:{'Grande':img('mannequin-tall-demo-cleed.png')}, pieces:[{cat:'Haut',prix:245,nom:'Veste cloutée dorée',marque:'Sandro Paris',mainFile:'blazer-femme-cleed-demo.jpg',mainLbl:'Veste cloutée',vars:[]},{cat:'Bas',prix:165,nom:'Jean brodé palmiers',marque:'Sandro Paris',mainFile:'jean-essai-claia.jpg',mainLbl:'Jean palmiers',vars:[]},{cat:'Chaussures',prix:95,nom:'Baskets rouges',marque:'Sandro Paris',mainFile:'basket-red-essai-claia.jpg',mainLbl:'Baskets rouges',vars:[]}], occ:['soirée','concert','événement'], styles:['statement','bold','rock'], mood:['audacieux','festif','iconique'] },
+  { id:3, nom:'French Riviera', desc:'Chemise beige crop, jupe plissée, baskets blanches — essence estivale', img:img('4e-tenue-generee-prototype.png'), morphs:{'Grande':img('mannequin-tall-demo-cleed.png')}, pieces:[{cat:'Haut',prix:79,nom:'Chemise crop beige',marque:'Sandro Paris',mainFile:'chemise-beige-essai-claia.jpg',mainLbl:'Chemise beige',vars:[]},{cat:'Bas',prix:69,nom:'Jupe plissée beige',marque:'Sandro Paris',mainFile:'beige-skirt-essai-claia.jpg',mainLbl:'Jupe plissée',vars:[]},{cat:'Chaussures',prix:89,nom:'Baskets blanches',marque:'Sandro Paris',mainFile:'basket-white-essai-claia.jpg',mainLbl:'Baskets blanches',vars:[]}], occ:['week-end','vacances','balade'], styles:['casual','estival','naturel'], mood:['léger','détendu','estival'] },
+  { id:4, nom:'APC Weekender', desc:'Chemise rayée, pantalon tailleur marine, baskets marron — casual luxe sobre', img:img('5e-tenue-generee-prototype.png'), morphs:{'Grande':img('mannequin-tall-demo-cleed.png')}, pieces:[{cat:'Haut',prix:145,nom:'Chemise oversize rayée',marque:'Sandro Paris',mainFile:'chemise-oversize-femme-photo-demo-cleed.jpg',mainLbl:'Chemise rayée',vars:[]},{cat:'Bas',prix:120,nom:'Pantalon tailleur marine',marque:'Sandro Paris',mainFile:'pantalon-tailleur-demo-cleed.jpg',mainLbl:'Pantalon marine',vars:[]},{cat:'Chaussures',prix:89,nom:'Baskets marron',marque:'Sandro Paris',mainFile:'basket-marron-essai-claia.jpg',mainLbl:'Baskets marron',vars:[]}], occ:['week-end','déjeuner','balade'], styles:['casual luxe','minimaliste','french style'], mood:['décontracté','soigné','naturel'] },
+  { id:5, nom:'Parisian Evening', desc:'Veste tweed, jupe volants noire, sandales compensées — élégance rive gauche', img:img('6e-tenue-generee-prototyoe.png'), morphs:{'Grande':img('mannequin-tall-demo-cleed.png')}, pieces:[{cat:'Haut',prix:195,nom:'Veste tweed col blanc',marque:'Sandro Paris',mainFile:'blazer-marron-essai-claia.jpg',mainLbl:'Veste tweed',vars:[]},{cat:'Bas',prix:110,nom:'Jupe volants noire',marque:'Sandro Paris',mainFile:'jupe-demo-cleed.jpg',mainLbl:'Jupe noire',vars:[]},{cat:'Chaussures',prix:125,nom:'Sandales compensées',marque:'Sandro Paris',mainFile:'heels-demo-cleed.jpg',mainLbl:'Sandales',vars:[]}], occ:['soirée','dîner','spectacle'], styles:['parisien','romantique','élégant'], mood:['sophistiqué','raffiné','mémorable'] },
+  { id:6, nom:'Soirée Dorée', desc:'Chemise bleu ciel, pantalon camel, escarpins dorés — perfect dinner look', img:img('7e-tenue-generee-prototype.png'), morphs:{'Grande':img('mannequin-tall-demo-cleed.png')}, pieces:[{cat:'Haut',prix:85,nom:'Chemise bleu ciel',marque:'Sandro Paris',mainFile:'bleu-ciel-chemise-essai-claia.jpg',mainLbl:'Chemise bleue',vars:[]},{cat:'Bas',prix:95,nom:'Pantalon large camel',marque:'Sandro Paris',mainFile:'pantalon-camel-essai-claia.jpg',mainLbl:'Pantalon camel',vars:[]},{cat:'Chaussures',prix:145,nom:'Escarpins dorés',marque:'Sandro Paris',mainFile:'escarpin-dore-essai-claia.jpg',mainLbl:'Escarpins dorés',vars:[]}], occ:['dîner','soirée','cocktail'], styles:['parisien','chic','élégant'], mood:['élégant','lumineux','festif'] },
+  { id:7, nom:'Casual Urbain', desc:'T-shirt gris, cargo noir, mocassins noirs — streetwear épuré', img:img('8e-tenue-generee-prototype.png'), morphs:{'Grande':img('mannequin-tall-demo-cleed.png')}, pieces:[{cat:'Haut',prix:55,nom:'T-shirt gris',marque:'Sandro Paris',mainFile:'grey-t-shirt-essai-claia.jpg',mainLbl:'T-shirt gris',vars:[]},{cat:'Bas',prix:89,nom:'Pantalon cargo noir',marque:'Sandro Paris',mainFile:'pantalon-cargo-noir-essai-claia.jpg',mainLbl:'Cargo noir',vars:[]},{cat:'Chaussures',prix:95,nom:'Mocassins noirs',marque:'Sandro Paris',mainFile:'mocassin-noirs-essai-claia.jpg',mainLbl:'Mocassins noirs',vars:[]}], occ:['week-end','quotidien'], styles:['streetwear','casual','urbain'], mood:['simple','efficace','décontracté'] },
+  { id:8, nom:'Sporty Luxe', desc:'Blazer cargo noir, jean brodé palmiers, baskets blanches — tension luxe/utilitaire', img:img('9e-tenue-generee-prototype.png'), morphs:{'Grande':img('mannequin-tall-demo-cleed.png')}, pieces:[{cat:'Haut',prix:175,nom:'Blazer cargo noir',marque:'Sandro Paris',mainFile:'blazer-noir-essai-claia.jpg',mainLbl:'Blazer cargo',vars:[]},{cat:'Bas',prix:165,nom:'Jean brodé palmiers',marque:'Sandro Paris',mainFile:'jean-essai-claia.jpg',mainLbl:'Jean palmiers',vars:[]},{cat:'Chaussures',prix:89,nom:'Baskets blanches',marque:'Sandro Paris',mainFile:'basket-white-essai-claia.jpg',mainLbl:'Baskets blanches',vars:[]}], occ:['travail','week-end','soirée'], styles:['casual luxe','streetwear','contemporain'], mood:['moderne','dynamique','cool'] },
+];
+
+const CINEMA = [
+  { film:"Le Diable s'habille en Prada", char:"Andy Sachs", era:"New York · 2006", col:"#D4537E", occ:'travail', styles:['parisien','tailored'] },
+  { film:"Breakfast at Tiffany's", char:"Holly Golightly", era:"New York · 1961", col:"#1D9E75", occ:'soirée', styles:['parisien','élégant'] },
+  { film:"À bout de souffle", char:"Patricia Franchini", era:"Paris · 1960", col:"#5F5E5A", occ:'week-end', styles:['minimaliste','parisien'] },
+  { film:"Succession", char:"Siobhan Roy", era:"New York · 2018", col:"#185FA5", occ:'travail', styles:['tailored','minimaliste'] },
+  { film:"Saltburn", char:"Venetia Catton", era:"Angleterre · 2023", col:"#854F0B", occ:'soirée', styles:['tailored','romantique'] },
+  { film:"Emily in Paris", char:"Sylvie Grateau", era:"Paris · 2020", col:"#993556", occ:'travail', styles:['parisien','statement'] },
+  { film:"The Great Gatsby", char:"Daisy Buchanan", era:"New York · 1920s", col:"#BA7517", occ:'soirée', styles:['parisien','romantique'] },
+  { film:"Pulp Fiction", char:"Mia Wallace", era:"Los Angeles · 1994", col:"#2C2C2A", occ:'soirée', styles:['statement','bold'] },
+  { film:"Call Me By Your Name", char:"Elio Perlman", era:"Italie · 1983", col:"#0F6E56", occ:'week-end', styles:['casual','naturel'] },
+];
+
+const S = {
+  budget: 300, occasion: '', saison: '', styles: ['minimaliste','parisien'],
+  search: '', cinemaIdx: -1, outfitIdx: 0, morphKey: 'Élancée',
+  pieceSel: [0,0,0], ranked: TENUES.map((_,i)=>i), aiCtx: ''
+};
+
+function go(tab) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('on'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('on'));
+  document.getElementById('s-'+tab).classList.add('on');
+  const tabs = ['d','c','r','v'];
+  document.querySelectorAll('.nav-btn')[tabs.indexOf(tab)].classList.add('on');
+}
+
+function pill(el, key) {
+  const v = el.dataset.v, arr = S[key], i = arr.indexOf(v);
+  if (i>-1) { arr.splice(i,1); el.classList.remove('on'); }
+  else { arr.push(v); el.classList.add('on'); }
+}
+
+function showOverlay(msg) { document.getElementById('overlayMsg').textContent=msg; document.getElementById('overlay').classList.add('on'); }
+function hideOverlay() { document.getElementById('overlay').classList.remove('on'); }
+function setMsg(m) { document.getElementById('overlayMsg').textContent=m; }
+
+async function aiRank(query, ctx) {
+  const summaries = TENUES.map(t=>({ id:t.id, nom:t.nom, desc:t.desc, occ:t.occ, styles:t.styles, mood:t.mood }));
+  const prompt = `Tu es l'IA de CLAIA, personal shopper Sandro Paris haut de gamme.
+Requête utilisateur: "${query}"
+Contexte: occasion="${ctx.occ||'non précisée'}", saison="${ctx.sai||'non précisée'}", styles=[${ctx.styles.join(',')}]
+Tenues disponibles: ${JSON.stringify(summaries)}
+Classe les tenues de la plus à la moins pertinente. Réponds UNIQUEMENT avec ce JSON (aucun texte avant/après):
+{"ranked":[0,1,2,3,4,5,6,7,8],"ctx":"une phrase courte en français expliquant le choix principal"}`;
+  const r = await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:300,messages:[{role:'user',content:prompt}]})});
+  const d = await r.json();
+  return JSON.parse(d.content[0].text.trim());
+}
+
+function fallbackRank() {
+  const q = S.search.toLowerCase();
+  return TENUES.map((t,i) => {
+    let sc = 0;
+    if (S.occasion && t.occ.includes(S.occasion)) sc+=4;
+    S.styles.forEach(st => { if(t.styles.some(x=>x.includes(st)||st.includes(x))) sc+=2; });
+    if (q) { [...t.occ,...t.styles,...t.mood].forEach(l=>{ if(q.includes(l)||l.includes(q.split(' ')[0])) sc+=3; }); if(t.nom.toLowerCase().includes(q)) sc+=2; }
+    if (t.id===0 && (S.occasion==='travail'||S.styles.includes('parisien')||S.styles.includes('tailored'))) sc+=3;
+    return {i,sc};
+  }).sort((a,b)=>b.sc-a.sc).map(x=>x.i);
+}
+
+async function generate() {
+  S.search = document.getElementById('searchQ').value.trim();
+  S.pieceSel = [0,0,0]; S.morphKey = 'Élancée';
+  showOverlay('Analyse de vos préférences...');
+  try {
+    if (S.search.length > 2) {
+      const msgs = ['Compréhension de votre demande...','Sélection des tenues...','Finalisation...'];
+      let mi=0; const iv=setInterval(()=>{ mi++; if(mi<msgs.length) setMsg(msgs[mi]); },700);
+      const res = await aiRank(S.search,{occ:S.occasion,sai:S.saison,styles:S.styles});
+      clearInterval(iv);
+      S.ranked = res.ranked; S.aiCtx = res.ctx;
+    } else {
+      await new Promise(r=>setTimeout(r,600));
+      S.ranked = fallbackRank(); S.aiCtx = '';
+    }
+  } catch(e) { S.ranked = fallbackRank(); S.aiCtx = ''; }
+  S.outfitIdx = S.ranked[0];
+  hideOverlay();
+  renderResults();
+  go('r');
+}
+
+async function generateCinema() {
+  if (S.cinemaIdx<0) return;
+  const c = CINEMA[S.cinemaIdx];
+  S.occasion = c.occ; S.styles = [...c.styles];
+  S.search = `Look inspiré de ${c.film} — ${c.char}`;
+  document.getElementById('searchQ').value = S.search;
+  await generate();
+}
+
+function renderResults() {
+  const t = TENUES[S.outfitIdx];
+  const parts = [];
+  if (S.occasion) parts.push(`<b>Occasion :</b> ${S.occasion}`);
+  if (S.saison) parts.push(`<b>Saison :</b> ${S.saison}`);
+  if (S.styles.length) parts.push(`<b>Styles :</b> ${S.styles.join(', ')}`);
+  if (S.search) parts.push(`<b>Recherche :</b> "${S.search}"`);
+  if (S.aiCtx) parts.push(`✦ ${S.aiCtx}`);
+  document.getElementById('ctxBar').innerHTML = parts.length ? parts.join(' &nbsp;·&nbsp; ') : 'Toutes les tenues';
+  renderMann(t);
+  renderPieces(t);
+  renderThumbs();
+}
+
+function renderMann(t) {
+  const bar = document.getElementById('morphBar');
+  bar.innerHTML = '';
+  const morphs = Object.keys(t.morphs).length > 1 ? Object.keys(t.morphs) : ['Élancée','Athlétique','Courbes','Petite','Grande'];
+  morphs.forEach(function(m) {
+    const b = document.createElement('button');
+    b.className = 'morph-btn' + (m===S.morphKey?' on':'');
+    b.textContent = m;
+    b.onclick = function() {
+      S.morphKey = m;
+      bar.querySelectorAll('.morph-btn').forEach(function(x){x.classList.remove('on');});
+      b.classList.add('on');
+      updateMann(t);
+    };
+    bar.appendChild(b);
+  });
+  document.getElementById('outfitName').textContent = t.nom;
+  document.getElementById('outfitDesc').textContent = t.desc;
+  updateMann(t);
+}
+
+function updateMann(t) {
+  const el = document.getElementById('mannImg');
+  let src = null;
+  t.pieces.forEach(function(p, pi) {
+    const sel = S.pieceSel[pi];
+    if (sel>0 && p.vars[sel-1] && p.vars[sel-1].mann) src = img(p.vars[sel-1].mann);
+  });
+  if (!src) src = t.morphs[S.morphKey] || t.morphs[Object.keys(t.morphs)[0]] || t.img;
+  el.style.opacity='0';
+  setTimeout(function(){ el.src=src; el.style.opacity='1'; },200);
+}
+
+function renderPieces(t) {
+  const col = document.getElementById('piecesCol');
+  col.innerHTML = '';
+  let total = 0;
+  t.pieces.forEach(function(piece, pi) {
+    total += piece.prix;
+    const items = [{ src:img(piece.mainFile), lbl:piece.mainLbl, idx:0 }];
+    piece.vars.forEach(function(v, vi) { items.push({ src:img(v.file), lbl:v.lbl, idx:vi+1, mann:v.mann }); });
+
+    const card = document.createElement('div');
+    card.className = 'piece-card';
+
+    const top = document.createElement('div'); top.className='piece-top';
+    top.innerHTML='<span class="piece-cat">'+piece.cat+'</span><span class="piece-price" id="pp-'+pi+'">'+piece.prix+'€</span>';
+    card.appendChild(top);
+
+    const nm = document.createElement('div'); nm.className='piece-name'; nm.id='pn-'+pi; nm.textContent=piece.nom;
+    card.appendChild(nm);
+    const br = document.createElement('div'); br.className='piece-brand'; br.textContent=piece.marque;
+    card.appendChild(br);
+
+    const car = document.createElement('div'); car.className='carousel';
+    items.forEach(function(item) {
+      const cell = document.createElement('div');
+      cell.className = 'car-item' + (item.idx===S.pieceSel[pi]?' on':'');
+      const imgBox = document.createElement('div'); imgBox.className='car-item-img';
+      const im = document.createElement('img'); im.src=item.src; im.alt=item.lbl; im.loading='lazy';
+      imgBox.appendChild(im); cell.appendChild(imgBox);
+      const lbl = document.createElement('div'); lbl.className='car-item-lbl'; lbl.textContent=item.lbl;
+      cell.appendChild(lbl);
+      (function(cPi, cItem, cCard) {
+        cell.addEventListener('click', function() {
+          S.pieceSel[cPi] = cItem.idx;
+          cCard.querySelectorAll('.car-item').forEach(function(x){x.classList.remove('on');});
+          cell.classList.add('on');
+          document.getElementById('pn-'+cPi).textContent = cItem.lbl;
+          updateMann(t);
+        });
+      })(pi, item, card);
+      car.appendChild(cell);
+    });
+    card.appendChild(car);
+
+    if (items.length>1) { const h=document.createElement('div'); h.className='piece-hint'; h.textContent='Cliquez pour choisir une alternative'; card.appendChild(h); }
+    const btn=document.createElement('button'); btn.className='btn-add'; btn.textContent='Ajouter au panier'; card.appendChild(btn);
+    col.appendChild(card);
+  });
+  document.getElementById('totalAmt').textContent = total+'€';
+}
+
+function renderThumbs() {
+  const row = document.getElementById('thumbsRow');
+  row.innerHTML='';
+  S.ranked.slice(0,7).forEach(function(i) {
+    const t = TENUES[i];
+    const div = document.createElement('div');
+    div.className='thumb'+(i===S.outfitIdx?' on':'');
+    div.innerHTML='<img src="'+t.img+'" alt="'+t.nom+'" loading="lazy"><div class="thumb-name">'+t.nom+'</div>';
+    div.onclick=function() {
+      S.outfitIdx=i; S.pieceSel=[0,0,0]; S.morphKey='Élancée';
+      renderMann(TENUES[i]); renderPieces(TENUES[i]);
+      row.querySelectorAll('.thumb').forEach(function(x){x.classList.remove('on');});
+      div.classList.add('on');
+    };
+    row.appendChild(div);
+  });
+}
+
+function handleUpload(input) {
+  if (!input.files[0]) return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    const box=document.getElementById('uploadBox');
+    box.className='upload-zone has-img';
+    box.innerHTML='<img src="'+e.target.result+'">';
+    box.onclick=function(){document.getElementById('fileIn').click();};
+    document.getElementById('vsBtn').disabled=false;
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+
+async function runVSearch() {
+  showOverlay("Analyse de l'image...");
+  const msgs=['Extraction des caractéristiques...','Correspondance des styles...','Résultats en cours...'];
+  let mi=0; const iv=setInterval(function(){mi++;if(mi<msgs.length)setMsg(msgs[mi]);},700);
+  await new Promise(r=>setTimeout(r,2400));
+  clearInterval(iv); hideOverlay();
+  const grid=document.getElementById('vsGrid');
+  const scores=[98,94,91,87];
+  grid.innerHTML=TENUES.slice(0,4).map(function(t,i){
+    const total=t.pieces.reduce(function(s,p){return s+p.prix;},0);
+    return '<div class="vs-card" onclick="S.outfitIdx='+t.id+';S.pieceSel=[0,0,0];S.morphKey=\'Élancée\';renderResults();go(\'r\')">'+'<img src="'+t.img+'" alt="'+t.nom+'" loading="lazy">'+'<div class="vs-info"><div class="vs-score">Similarité '+scores[i]+'%</div><div class="vs-name">'+t.nom+'</div><div class="vs-price">'+total+'€</div></div></div>';
+  }).join('');
+}
+
+function initCinema() {
+  const grid=document.getElementById('cinemaGrid');
+  CINEMA.forEach(function(c,i){
+    const card=document.createElement('div'); card.className='cinema-card';
+    card.innerHTML='<div class="c-dot" style="background:'+c.col+'"></div><div class="c-film">'+c.film+'</div><div class="c-char">'+c.char+'</div><div class="c-era">'+c.era+'</div>';
+    card.onclick=function(){document.querySelectorAll('.cinema-card').forEach(function(x){x.classList.remove('on');});card.classList.add('on');S.cinemaIdx=i;};
+    grid.appendChild(card);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  S.styles = ['minimaliste','parisien'];
+  S.pieceSel = [0,0,0];
+  S.ranked = TENUES.map(function(_,i){return i;});
+  initCinema();
+  renderResults();
+});
+</script>
+
+<!-- DÉCOUVRIR -->
+<div class="screen on" id="s-d">
+  <div class="search-wrap">
+    <div class="search-row">
+      <span class="search-icon"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></span>
+      <input class="search-input" id="searchQ" type="text" placeholder="Décrivez vos envies... ex: une tenue élégante pour un dîner à Paris, tons neutres" onkeydown="if(event.key==='Enter')generate()">
+      <span class="search-badge">✦ IA Sandro</span>
+      <button class="search-go" onclick="generate()">Chercher</button>
+    </div>
+  </div>
+  <div class="filters-body">
+    <div class="eyebrow">Votre profil style</div>
+    <div class="section-title">Découvrir</div>
+    <div class="section-sub">Personnalisez pour des recommandations Sandro sur mesure</div>
+
+    <div class="f-block">
+      <span class="f-label">Budget par tenue</span>
+      <div class="budget-val" id="budgetVal">300€</div>
+      <input type="range" min="50" max="1000" value="300" oninput="S.budget=+this.value;document.getElementById('budgetVal').textContent=this.value+'€'">
+    </div>
+
+    <div class="f-row">
+      <div><span class="f-label">Occasion</span>
+        <select class="f-select" onchange="S.occasion=this.value">
+          <option value="">Toutes occasions</option>
+          <option value="travail">Travail / Chic</option>
+          <option value="soirée">Soirée</option>
+          <option value="week-end">Week-end</option>
+          <option value="dîner">Dîner</option>
+          <option value="voyage">Voyage</option>
+        </select>
+      </div>
+      <div><span class="f-label">Saison</span>
+        <select class="f-select" onchange="S.saison=this.value">
+          <option value="">Toutes saisons</option>
+          <option value="printemps">Printemps / Été</option>
+          <option value="automne">Automne / Hiver</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="f-block">
+      <span class="f-label">Morphologie</span>
+      <div class="pills" id="morphPills">
+        <div class="pill" data-v="Élancée" onclick="S.morphKey=this.dataset.v;document.querySelectorAll('#morphPills .pill').forEach(p=>p.classList.remove('on'));this.classList.add('on')">Élancée</div>
+        <div class="pill" data-v="Athlétique" onclick="S.morphKey=this.dataset.v;document.querySelectorAll('#morphPills .pill').forEach(p=>p.classList.remove('on'));this.classList.add('on')">Athlétique</div>
+        <div class="pill" data-v="Courbes" onclick="S.morphKey=this.dataset.v;document.querySelectorAll('#morphPills .pill').forEach(p=>p.classList.remove('on'));this.classList.add('on')">Courbes</div>
+        <div class="pill" data-v="Petite" onclick="S.morphKey=this.dataset.v;document.querySelectorAll('#morphPills .pill').forEach(p=>p.classList.remove('on'));this.classList.add('on')">Petite</div>
+        <div class="pill" data-v="Grande" onclick="S.morphKey=this.dataset.v;document.querySelectorAll('#morphPills .pill').forEach(p=>p.classList.remove('on'));this.classList.add('on')">Grande</div>
+      </div>
+    </div>
+
+    <div class="hr"></div>
+
+    <div class="f-block">
+      <span class="f-label">Styles préférés</span>
+      <div class="pills">
+        <div class="pill on" data-v="minimaliste" onclick="pill(this,'styles')">Minimaliste</div>
+        <div class="pill on" data-v="parisien" onclick="pill(this,'styles')">Parisien chic</div>
+        <div class="pill" data-v="casual" onclick="pill(this,'styles')">Casual luxe</div>
+        <div class="pill" data-v="tailored" onclick="pill(this,'styles')">Tailored</div>
+        <div class="pill" data-v="statement" onclick="pill(this,'styles')">Statement</div>
+        <div class="pill" data-v="romantique" onclick="pill(this,'styles')">Romantique</div>
+        <div class="pill" data-v="streetwear" onclick="pill(this,'styles')">Streetwear</div>
+      </div>
+    </div>
+
+    <div class="f-block">
+      <span class="f-label">Couleurs à éviter</span>
+      <div class="pills">
+        <div class="pill" data-v="marron" onclick="pill(this,'colors')">Marron</div>
+        <div class="pill" data-v="orange" onclick="pill(this,'colors')">Orange</div>
+        <div class="pill" data-v="jaune" onclick="pill(this,'colors')">Jaune</div>
+        <div class="pill" data-v="rose" onclick="pill(this,'colors')">Rose</div>
+        <div class="pill" data-v="violet" onclick="pill(this,'colors')">Violet</div>
+        <div class="pill" data-v="rouge" onclick="pill(this,'colors')">Rouge</div>
+      </div>
+    </div>
+
+    <div class="f-actions">
+      <button class="btn-ghost" onclick="S.styles=['minimaliste','parisien'];S.occasion='';S.saison='';S.search='';document.getElementById('searchQ').value='';document.querySelectorAll('.pill').forEach(p=>p.classList.remove('on'));document.querySelectorAll('.pill[data-v=minimaliste],.pill[data-v=parisien]').forEach(p=>p.classList.add('on'))">Réinitialiser</button>
+      <button class="btn-dark" onclick="generate()">→ Générer mes tenues</button>
+    </div>
+  </div>
+</div>
+
+<!-- STYLE ICONS -->
+<div class="screen" id="s-c">
+  <div class="search-wrap">
+    <div class="search-row">
+      <span class="search-icon"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></span>
+      <input class="search-input" id="searchQC" type="text" placeholder="Précisez votre vision du look..." onkeydown="if(event.key==='Enter'){document.getElementById('searchQ').value=this.value;generateCinema()}">
+      <span class="search-badge">✦ IA Sandro</span>
+      <button class="search-go" onclick="document.getElementById('searchQ').value=document.getElementById('searchQC').value;generateCinema()">Générer</button>
+    </div>
+  </div>
+  <div class="cinema-body">
+    <div class="eyebrow">S'inspirer du grand écran</div>
+    <div class="section-title">Style Icons &amp; Cinéma</div>
+    <div class="section-sub">Un univers, une attitude — traduits en tenue Sandro achetable aujourd'hui</div>
+    <div class="cinema-grid" id="cinemaGrid"></div>
+    <div class="cinema-actions">
+      <button class="btn-ghost" onclick="go('d')">← Mes préférences</button>
+      <button class="btn-dark" onclick="generateCinema()">Générer ce look →</button>
+    </div>
+  </div>
+</div>
+
+<!-- MA SÉLECTION -->
+<div class="screen" id="s-r">
+  <div class="results-body">
+    <div class="ctx-bar" id="ctxBar">Vos critères</div>
+    <div class="results-layout">
+      <div class="mann-panel">
+        <div class="morph-bar" id="morphBar"></div>
+        <div class="mann-box"><img id="mannImg" src="" alt="Mannequin"></div>
+        <div class="outfit-name" id="outfitName"></div>
+        <div class="outfit-desc" id="outfitDesc"></div>
+      </div>
+      <div>
+        <div class="pieces-col" id="piecesCol"></div>
+        <div class="total-bar">
+          <div>
+            <div class="total-lbl">Total tenue</div>
+            <div class="total-amt" id="totalAmt">389€</div>
+          </div>
+          <div class="total-acts">
+            <button class="btn-ghost" onclick="go('c')">Essayer Cinéma</button>
+            <button class="btn-dark">Acheter la tenue</button>
+          </div>
+        </div>
+        <div class="other-row">
+          <div class="other-lbl">Autres suggestions pour vous</div>
+          <div class="thumbs" id="thumbsRow"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RECHERCHE VISUELLE -->
+<div class="screen" id="s-v">
+  <div class="vs-body">
+    <div class="eyebrow">Intelligence visuelle</div>
+    <div class="section-title">Recherche par image</div>
+    <div class="section-sub">Uploadez une photo d'inspiration — CLAIA trouve les tenues Sandro les plus proches</div>
+    <div class="vs-layout">
+      <div>
+        <div class="upload-zone" id="uploadBox" onclick="document.getElementById('fileIn').click()">
+          <div class="upload-ico">📷</div>
+          <div class="upload-txt">Déposez votre photo ici</div>
+          <div class="upload-hint">Inspiration mode, look repéré, couleur...</div>
+        </div>
+        <input type="file" id="fileIn" accept="image/*" style="display:none" onchange="handleUpload(this)">
+        <div class="vs-filters">
+          <div><span class="f-label">Je cherche</span>
+            <select class="f-select"><option>Une tenue complète similaire</option><option>Seulement le haut</option><option>Seulement le bas</option><option>Les chaussures</option></select></div>
+          <div class="vs-filter-row">
+            <div><span class="f-label">Style</span><select class="f-select"><option>Même style</option><option>Plus habillé</option><option>Plus casual</option></select></div>
+            <div><span class="f-label">Budget</span><select class="f-select"><option>&lt; 200€</option><option>200-500€</option><option>500€+</option></select></div>
+          </div>
+          <div class="vs-filter-row">
+            <div><span class="f-label">Occasion</span><select class="f-select"><option>Toutes</option><option>Travail</option><option>Soirée</option><option>Week-end</option></select></div>
+            <div><span class="f-label">Saison</span><select class="f-select"><option>Toutes saisons</option><option>Printemps / Été</option><option>Automne / Hiver</option></select></div>
+          </div>
+        </div>
+        <button class="btn-dark" id="vsBtn" onclick="runVSearch()" disabled style="width:100%">🔍 Lancer la recherche visuelle</button>
+      </div>
+      <div>
+        <div class="vs-results-title">Résultats</div>
+        <div class="vs-grid" id="vsGrid">
+          <div class="vs-empty">Uploadez une image pour lancer la recherche</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
